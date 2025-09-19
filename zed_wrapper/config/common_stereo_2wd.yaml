@@ -48,7 +48,7 @@
             # 'zedx.yaml', 'zedxmini.yaml', 'virtual.yaml' files
 
         sensors:
-            publish_imu_tf: false # [overwritten by launch file options] enable/disable the IMU TF broadcasting
+            publish_imu_tf: true # [overwritten by launch file options] enable/disable the IMU TF broadcasting
             sensors_image_sync: false # Synchronize Sensors messages with latest published video/depth message
             sensors_pub_rate: 100. # frequency of publishing of sensors data. MAX: 400. - MIN: grab rate
 
@@ -80,14 +80,21 @@
 
         pos_tracking:
             pos_tracking_enabled: true # True to enable positional tracking from start
-            pos_tracking_mode: 'GEN_1' # Matches the ZED SDK setting: 'GEN_1', 'GEN_2', 'GEN_3'
+            #pos_tracking_mode: 'GEN_1' # Matches the ZED SDK setting: 'GEN_1', 'GEN_2', 'GEN_3'
+            pos_tracking_mode: 'GEN_3'
             imu_fusion: true # enable/disable IMU fusion. When set to false, only the optical odometry will be used.
-            publish_tf: true # [overwritten by launch file options] publish `odom -> camera_link` TF
-            publish_map_tf: true # [overwritten by launch file options] publish `map -> odom` TF
+            #publish_tf: true # [overwritten by launch file options] publish `odom -> camera_link` TF
+            #publish_map_tf: true # [overwritten by launch file options] publish `map -> odom` TF
+            publish_tf: false # [overwritten by launch file options] publish `odom -> camera_link` TF
+            publish_map_tf: false # [overwritten by launch file options] publish `map -> odom` TF
+
             map_frame: 'map'
-            odometry_frame: 'odom'
+            #odometry_frame: 'odom'
+            odometry_frame: 'youship/cam_odom'
+            # odometry_frame: 'zed_front_camera_link'
             area_memory_db_path: ''
-            area_memory: true # Enable to detect loop closure
+            #area_memory: true # Enable to detect loop closure
+            area_memory: false ## para VIO colocar a false
             reset_odom_with_loop_closure: true # Re-initialize odometry to the last valid pose when loop closure happens (reset camera odometry drift)
             depth_min_range: 0.0 # Set this value for removing fixed zones of the robot in the FoV of the camerafrom the visual odometry evaluation
             set_as_static: false # If 'true' the camera will be static and not move in the environment
@@ -95,20 +102,27 @@
             floor_alignment: false # Enable to automatically calculate camera/floor offset
             initial_base_pose: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # Initial position of the `camera_link` frame in the map -> [X, Y, Z, R, P, Y]
             path_pub_rate: 2.0 # [DYNAMIC] - Camera trajectory publishing frequency
-            path_max_count: -1 # use '-1' for unlimited path size
-            two_d_mode: false # Force navigation on a plane. If true the Z value will be fixed to 'fixed_z_value', roll and pitch to zero
-            fixed_z_value: 0.0 # Value to be used for Z coordinate if `two_d_mode` is true
+            #path_max_count: -1 # use '-1' for unlimited path size
+            path_max_count: 30 ## para VIO colocar a 30
+            two_d_mode: true # Force navigation on a plane. If true the Z value will be fixed to 'fixed_z_value', roll and pitch to zero
+            # fixed_z_value: 0.275 # Value to be used for Z coordinate if `two_d_mode` is true
+            fixed_z_value: 0.0 # Value to be used for Z coordinate if `two_d_mode` is true            
             transform_time_offset: 0.0 # The value added to the timestamp of `map->odom` and `odom->camera_link` transform being generated
             reset_pose_with_svo_loop: true # Reset the camera pose the `initial_base_pose` when the SVO loop is enabled and the SVO playback reaches the end of the file.
+            ## segundo https://docs.nav2.org/tutorials/docs/integrating_vio.html
+            qos_depth: 5
 
         gnss_fusion:
             gnss_fusion_enabled: false # fuse 'sensor_msg/NavSatFix' message information into pose data
-            gnss_fix_topic: '/fix' # Name of the GNSS topic of type NavSatFix to subscribe [Default: '/gps/fix']
+            #gnss_fix_topic: '/fix' # Name of the GNSS topic of type NavSatFix to subscribe [Default: '/gps/fix']
+            gnss_fix_topic: '/ublox_gps_node/fix'
             gnss_zero_altitude: false # Set to `true` to ignore GNSS altitude information
             h_covariance_mul: 1.0 # Multiplier factor to be applied to horizontal covariance of the received fix (plane X/Y)
             v_covariance_mul: 1.0 # Multiplier factor to be applied to vertical covariance of the received fix (Z axis)
-            publish_utm_tf: true # Publish `utm` -> `map` TF
-            broadcast_utm_transform_as_parent_frame: false # if 'true' publish `utm` -> `map` TF, otherwise `map` -> `utm`
+            #publish_utm_tf: true # Publish `utm` -> `map` TF
+            publish_utm_tf: false
+            #broadcast_utm_transform_as_parent_frame: false # if 'true' publish `utm` -> `map` TF, otherwise `map` -> `utm`
+            broadcast_utm_transform_as_parent_frame: false
             enable_reinitialization: false # determines whether reinitialization should be performed between GNSS and VIO fusion when a significant disparity is detected between GNSS data and the current fusion data. It becomes particularly crucial during prolonged GNSS signal loss scenarios.
             enable_rolling_calibration: true # If this parameter is set to true, the fusion algorithm will used a rough VIO / GNSS calibration at first and then refine it. This allow you to quickly get a fused position.
             enable_translation_uncertainty_target: false # When this parameter is enabled (set to true), the calibration process between GNSS and VIO accounts for the uncertainty in the determined translation, thereby facilitating the calibration termination. The maximum allowable uncertainty is controlled by the 'target_translation_uncertainty' parameter.
@@ -166,8 +180,8 @@
             thread_pointcloud_priority: 60 # ONLY with 'SCHED_FIFO' and 'SCHED_RR' - [1 (LOW) z-> 99 (HIGH)] - NOTE: 'sudo' required
 
         debug:
-            sdk_verbose: 1 # Set the verbose level of the ZED SDK
-            sdk_verbose_log_file: '' # Path to the file where the ZED SDK will log its messages. If empty, no file will be created. The log level can be set using the `sdk_verbose` parameter.
+            sdk_verbose: 999 # Set the verbose level of the ZED SDK
+            #sdk_verbose_log_file: '/home/idmind/logs/zedx.txt' # Path to the file where the ZED SDK will log its messages. If empty, no file will be created. The log level can be set using the `sdk_verbose` parameter.
             debug_common: false
             debug_sim: false
             debug_video_depth: false
